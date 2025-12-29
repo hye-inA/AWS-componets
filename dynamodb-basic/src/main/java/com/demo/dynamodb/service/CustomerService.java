@@ -1,13 +1,11 @@
 package com.demo.dynamodb.service;
 
+import com.demo.dynamodb.dto.CustomerUpdateRequeset;
 import com.demo.dynamodb.entity.Customer;
-import jakarta.annotation.PostConstruct;
+import com.demo.dynamodb.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+
 
 import java.util.UUID;
 
@@ -15,15 +13,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerService {
 
-    private final DynamoDbEnhancedClient enhanceClient;
 
-    // 테이블 매핑 객체
-    private DynamoDbTable<Customer> customerTable;
+    private final CustomerRepository customerRepository;
 
-    @PostConstruct
-    public void init() {
-        customerTable = enhanceClient.table("Customer-hhi", TableSchema.fromBean(Customer.class));
-    }
 
     // 저장하기 - PK 생성 후 반환
     public String saveCustomer(String name, String email) {
@@ -36,7 +28,7 @@ public class CustomerService {
         );
 
         // 저장 : putItem() 메서드
-        customerTable.putItem(customer);
+        customerRepository.save(customer);
 
         // PK 반환
         return customerId;
@@ -44,13 +36,26 @@ public class CustomerService {
 
     // 조회하기
     public Customer getCustomer(String customerId) {
-        // Key 객체 생성
-        Key key = Key.builder()
-                    .partitionValue(customerId)
-                    .build();
-
-        return customerTable.getItem(key);
+        return customerRepository.findById(customerId);
     }
 
+    public void deleteCustomer(String customerId) {
+       customerRepository.deleteById(customerId);
+    }
 
+    public Customer updateCustomer(String customerId, CustomerUpdateRequeset request) {
+        Customer existing = customerRepository.findById(customerId);
+
+        if (existing == null) {
+            return null;
+        }
+
+        if (request.name() != null) {
+            existing.setName(request.name());
+        }
+        if (request.email() != null) {
+            existing.setEmail(request.email());
+        }
+        return customerRepository.update(existing);
+    }
 }
