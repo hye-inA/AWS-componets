@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>스트리밍 다운로드</title>
+</head>
+<body>
+<h1>Presigned URL 업로드</h1>
+<div class="section">
+  <input type="file" id="fileInput">
+  <button id="uploadButton" onclick="uploadFile()">업로드 시작</button>
+  <div id="uploadStatus"></div>
+</div>
+
+<h1>스트리밍 다운로드</h1>
+<div class="section">
+  <p>S3에 업로드된 Key를 입력하세요.</p>
+  <input type="text" id="downloadkey" placeholder="예: uploads/uuid_image.jpg">
+  <button onclick="downloadFile()">다운로드</button>
+  <div id="downloadStatus"></div>
+</div>
+
+
+<script>
+  async function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadBtn = document.getElementById('uploadButton');
+
+    // 파일 선택 확인
+    if (!fileInput.files || fileInput.files.length === 0) {
+      uploadStatus.innerHTML = '<div class="status error">파일을 선택해주세요.</div>';
+      return;
+    }
+
+    const file = fileInput.files[0];
+    uploadBtn.disabled = true;
+    uploadStatus.innerHTML = '<div class="status info">Presigned URL 요청 중...</div>';
+
+    try {
+      // 서버에 Presigned URL 요청
+      const urlResponse = await fetch(
+              `/presigned-url?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`
+      );
+
+      if (!urlResponse.ok) {
+        throw new Error('Presigned URL 발급 실패');
+      }
+
+      const { url, key } = await urlResponse.json();
+      console.log('Presigned URL 발급 완료:', url);
+      console.log('S3 Key:', key);
+
+      uploadStatus.innerHTML = '<div class="status info">S3에 업로드 중...</div>';
+
+      // Presigned URL로 S3에 직접 PUT 요청
+      const uploadResponse = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type
+        },
+        body: file
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('S3 업로드 실패: ' + uploadResponse.status);
+      }
+
+      uploadStatus.innerHTML = `
+                <div class="status success">
+                    업로드 성공<br>
+                    <strong>S3 Key:</strong> ${key}<br>
+                </div>
+            `;
+
+
+    } catch (error) {
+      console.error('업로드 오류:', error);
+      uploadStatus.innerHTML = `<div class="status error">업로드 실패: ${error.message}</div>`;
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  }
+
+  function downloadFile() {
+    const key = document.getElementById('downloadKey').value.trim();
+    const downloadStatus = document.getElementById('downloadStatus');
+
+    if (!key) {
+      downloadStatus.innerHTML = '<div class="status error">Key를 입력해주세요.</div>';
+      return;
+    }
+
+    downloadStatus.innerHTML = '<div class="status info">다운로드 시작...</div>';
+
+    // 스트리밍 다운로드 - 브라우저가 직접 처리
+    window.location.href = `/download?key=${encodeURIComponent(key)}`;
+
+    setTimeout(() => {
+      downloadStatus.innerHTML = '<div class="status success">다운로드가 시작됨</div>';
+    }, 1000);
+  }
+</script>
+</body>
+</html>
