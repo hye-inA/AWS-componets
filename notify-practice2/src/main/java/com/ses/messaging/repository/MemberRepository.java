@@ -29,8 +29,4 @@ public class MemberRepository {
         memberTable.putItem(member);
     }
 
-    // 전체 회원 수 조회
-    public long count() {
-        return memberTable.scan().items().stream().count();
-    }
 }

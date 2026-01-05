@@ -51,14 +51,10 @@ public class MemberService {
                 htmlContent
         );
 
-        // 6. 전체 회원 수 조회
-        long totalMembers = memberRepository.count();
+        // 6. 관리자에게 SMS 발송
+        notificationService.sendAdminSms(request.name());
 
-        // 7. 관리자에게 SMS 발송
-        String smsMessage = String.format("[알림] 신규 회원 가입! (총 %d명)", totalMembers);
-        notificationService.sendAdminSms(smsMessage);
-
-        // 8. 응답 반환
+        // 7. 응답 반환
         return new MemberResponse(memberId, "가입 완료! 이메일을 확인하세요.");
     }
 }
