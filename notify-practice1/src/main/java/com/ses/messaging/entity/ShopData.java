@@ -20,7 +20,7 @@ public class ShopData {
     private String type;  // "ORDER" 또는 "ITEM" (구분자)
     private String info;  // "ORDER"인 경우 주문상태(ORDER_CREATED 등), "ITEM"인 경우 상품명(PIZZA, COKE)
     private Long amount;  // "ORDER"인 경우 주문총액(20000), "ITEM"인 경우 상품가격(15000, 5000)
-
+    private String email;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("PK")  // 실제 DB 칼럼명은 PK
@@ -45,4 +45,9 @@ public class ShopData {
     public Long getAmount() {
         return amount;
     }
+
+    public String getEmail() {
+        return email;
+    }
 }
+
