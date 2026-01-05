@@ -24,8 +24,7 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<CreateOrderResponse> createOrder(@RequestBody CreateOrderRequest request) {
-        String newOrderId = orderService.createOrder(request.items());
-        CreateOrderResponse response = new CreateOrderResponse(newOrderId, "Order Created!");
+        CreateOrderResponse response = orderService.createOrder(request);
         return ResponseEntity.status(201).body(response);
     }
 
