@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +32,9 @@ public class OrderService {
                 .mapToLong(item -> item.price())  // .mapToLong(Item::price)
                 .sum();
 
+        // 주문 정보 + 주문 상품 합쳐서 Repository로 전달
+        List<ShopData> shopDataList = new ArrayList<>();
+
         // 주문 정보 저장
         ShopData orderInfo = ShopData.builder()
                 .pk(orderId)
@@ -39,7 +43,7 @@ public class OrderService {
                 .info("ORDER_CREATED")
                 .amount(totalAmount)
                 .build();
-        repository.save(orderInfo);
+        shopDataList.add(orderInfo);
 
         // 주문 상품 저장
         for (int i = 0, size = items.size(); i < size; i++) {
@@ -51,8 +55,11 @@ public class OrderService {
                     .info(item.name())
                     .amount(item.price())
                     .build();
-            repository.save(itemEntity);
+            shopDataList.add(itemEntity);
         }
+
+        // 트랜잭션을 위해서 한 번에 전달
+        repository.save(shopDataList);
 
         // 주문 ID 반환
         return orderId;

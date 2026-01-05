@@ -8,6 +8,8 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class ShopDataRepository {
@@ -20,7 +22,11 @@ public class ShopDataRepository {
         shopTable = enhancedClient.table("ShopData-mkt", TableSchema.fromBean(ShopData.class));
     }
 
-    public void save(ShopData shopData) {
-        shopTable.putItem(shopData);
+    public void save(List<ShopData> shopDataList) {
+        enhancedClient.transactWriteItems(builder ->
+                shopDataList.forEach(shopData ->
+                        builder.addPutItem(shopTable, shopData) // 엔티티 하나씩 전달해서 저장
+                )
+        );
     }
 }
