@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.pinpointsmsvoicev2.PinpointSmsVoiceV2Client;
+import software.amazon.awssdk.services.ses.SesClient;
 
 @Configuration
 public class AwsSdkConfig {
@@ -24,6 +26,22 @@ public class AwsSdkConfig {
     DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
         return DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamoDbClient)
+                .build();
+    }
+
+    // 이메일 전송을 위한 SesClient
+    @Bean
+    SesClient sesClient() {
+        return SesClient.builder()
+                .region(Region.AP_NORTHEAST_2)
+                .build();
+    }
+
+    // 문자 전송을 위한 PinpointSmsVoiceV2Client
+    @Bean
+    PinpointSmsVoiceV2Client smsClient() {
+        return PinpointSmsVoiceV2Client.builder()
+                .region(Region.AP_NORTHEAST_2)
                 .build();
     }
 }

@@ -31,6 +31,12 @@ dependencies {
     // dynamodb-enhanced
     implementation 'software.amazon.awssdk:dynamodb-enhanced'
 
+    // ses
+    implementation 'software.amazon.awssdk:ses:2.41.1'
+
+    // sms-voice
+    implementation 'software.amazon.awssdk:pinpointsmsvoicev2:2.41.1'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
